@@ -4,16 +4,16 @@ import time
 import requests
 import json
 import re
-from requests.cookies import RequestsCookieJar
-import execjs
 
 class UpdateData():
     def __init__(self,cookies,Drog_ID):
-
-        self.get_Drog_Info(cookies,Drog_ID)
-    def get_Drog_Info(self,cookies,Drog_ID):
+        # 修改药品信息
+        self.Updata_Drog_Info(cookies, Drog_ID)
+    def Updata_Drog_Info(self, cookies, Drog_ID):
         url = 'https://yaodian.yaofangwang.com/product/edit/'
         url += Drog_ID
+
+        # 根据ID获取网页源码
         content_html = self.GetHtmlCode(cookies,url)
         #print(content_html)
         soup = BeautifulSoup(content_html, 'html.parser', from_encoding='utf-8')
@@ -51,6 +51,7 @@ class UpdateData():
 
         #print(drog_id,drog_code,drog_commond_name,drog_group,drog_name,drog_num,drog_type,drog_weight)
        # print(shop_type,shop_days,shop_status)
+        # 数据字典
         data = {"store_medicineid":Drog_ID,"medicine_barcode":drog_code,"authorized_code":drog_id,"namecn":drog_commond_name,"standard":drog_standard,
                 "troche_type":drog_type,"aliascn":drog_name,"mill_title":drog_group,"product_number":drog_num,
                 "weight":drog_weight,"reserve":shop_reserve,"max_buyqty":shop_maxBuy,"price":shop_price,"period_to":"","store_medicine_typeid":"0",
