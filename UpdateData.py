@@ -6,12 +6,12 @@ import json
 import re
 
 class UpdateData():
-    def __init__(self,cookies,Drog_ID):
+    def __init__(self,cookies,url):
         # 修改药品信息
-        self.Updata_Drog_Info(cookies, Drog_ID)
-    def Updata_Drog_Info(self, cookies, Drog_ID):
-        url = 'https://yaodian.yaofangwang.com/product/edit/'
-        url += Drog_ID
+        self.Updata_Drog_Info(cookies, url)
+    def Updata_Drog_Info(self, cookies,url,shop_reserve=-10,drog_num=-10,shop_status=-10,shop_price=-10): # 库存，药品编号，上下架,商城价
+        # url = 'https://yaodian.yaofangwang.com/product/edit/'
+        # url += Drog_ID
 
         # 根据ID获取网页源码
         content_html = self.GetHtmlCode(cookies,url)
@@ -24,7 +24,8 @@ class UpdateData():
         drog_name = soup.find('input', id='txt_AliasCN')['value']  # 商品名称
         drog_type = soup.find('input', id='txt_TrocheType')['value']  # 型号
         drog_group = soup.find('input', id='txt_MillTitle')['value']  # 生产企业
-        drog_num = soup.find('input', id='txt_ProductNumber')['value']  # 商品编号
+        if drog_num==-10:
+            drog_num = soup.find('input', id='txt_ProductNumber')['value']  # 商品编号
         drog_standard = soup.find('input', id='txt_Standard')['value']  # 商品标准
         drog_weight = soup.find('input', id='txt_weight')['value']  # 商品重量
         drog_code = soup.find('input', id='txt_MedicineBarcode')['value']  # 条形码
@@ -39,20 +40,35 @@ class UpdateData():
         # shop_days = jsFunc.call('getValue', 'ddl_ScheduledDays')
         # shop_status = jsFunc.call('getValue', 'ddl_Status')
         status_all = soup.find('select',id = 'ddl_Status')
-        for status in status_all.find_all('option'):
-            if 'selected' in str(status):
-                shop_status = status['value']
-                break
-        shop_price = soup.find('input', id='txt_price')['value']  # 商城价
+        if store_status == -10:
+            for status in status_all.find_all('option'):
+                if 'selected' in str(status):
+                    shop_status = status['value']
+                    break
+        else:
+            status_dict={}
+            status_dict['发布']=1
+            status_dict['热销'] = 2
+            status_dict['促销'] = 3
+            status_dict['新品'] = 4
+            status_dict['推荐'] = 5
+            status_dict['特价'] = 6
+            status_dict['下架'] = -999
+            store_status = status_dict[store_status]
+
+        if shop_price == -10:
+            shop_price = soup.find('input', id='txt_price')['value']  # 商城价
         #shop_price = soup.find('input', id='txt_price')['value']  # 发货周期
         shop_maxBuy = soup.find('input', id='txt_MaxBuyQty')['value']  # 最大限购
         #shop_price = soup.find('input', id='txt_price')['value']  # 销售状态
-        shop_reserve = soup.find('input', id='txt_Reserve')['value']  # 商城库存
+        if shop_reserve == -10:
+            shop_reserve = soup.find('input', id='txt_Reserve')['value']  # 商城库存
 
         #print(drog_id,drog_code,drog_commond_name,drog_group,drog_name,drog_num,drog_type,drog_weight)
        # print(shop_type,shop_days,shop_status)
         # 数据字典
-        data = {"store_medicineid":Drog_ID,"medicine_barcode":drog_code,"authorized_code":drog_id,"namecn":drog_commond_name,"standard":drog_standard,
+        #"store_medicineid":Drog_ID,
+        data = {"medicine_barcode":drog_code,"authorized_code":drog_id,"namecn":drog_commond_name,"standard":drog_standard,
                 "troche_type":drog_type,"aliascn":drog_name,"mill_title":drog_group,"product_number":drog_num,
                 "weight":drog_weight,"reserve":shop_reserve,"max_buyqty":shop_maxBuy,"price":shop_price,"period_to":"","store_medicine_typeid":"0",
                 "scheduled_days":"1","store_medicine_status":shop_status}
