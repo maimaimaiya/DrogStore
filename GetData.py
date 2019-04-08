@@ -4,9 +4,7 @@ from bs4 import BeautifulSoup as BS
 import re
 import time
 import xlwt
-from xlrd import open_workbook
-from xlutils.copy import copy
-import pandas
+import sys
 
 #得到网页源代码
 #参数：网址
@@ -129,7 +127,7 @@ def GetData(cookie,username):
     save_file = xlwt.Workbook()
     sheet1 = save_file.add_sheet('药房网', cell_overwrite_ok=True)
     WriteXls(sheet1,"商品url", "国药准字", "规格", "商品编号","商城价格","发布状态","编号价格",row_count)
-    save_file.save('data/' + username + '.xls')
+    save_file.save(sys.path[0]+'/data/' + username + '.xls')
     #循环每一页得到数据
     for index in range(1, page_num+1):#page_num+1
         start_time = time.time()
