@@ -54,13 +54,20 @@ def GetIdPrice(s):
     if s.startswith('商品编号'):
         integer = re.findall(r"\d+\(", s)
         if (len(integer) == 0):
-            integer = 0
-
+            integer = re.findall(r"\d+�", s)
+            if (len(integer) == 0):
+                integer = 0
+            else:
+                integer = integer[0].strip('�')
         else:
             integer = integer[0].strip('(')
         decimal = re.findall(r"\)\d+", s)
         if (len(decimal) == 0):
-            decimal = 0
+            decimal = re.findall(r"�\d+", s)
+            if (len(decimal) == 0):
+                decimal = 0
+            else:
+                decimal = decimal[0].strip('�')
         else:
             decimal = decimal[0].strip(')')
         com = float(str(integer) + '.' + str(decimal))
@@ -148,7 +155,7 @@ def GetData(cookie,username):
             goods_all = soup_all[i].find_all('td')
             # print("goods_all",len(goods_all))
             #链接
-            goods_url = goods_all[6].find('a')['href']
+            goods_url = "https://yaodian.yaofangwang.com"+goods_all[6].find('a')['href']
             goods_single = goods_all[1].find_all('div', class_="text-left")
             #准字
             goods_quasi = goods_single[1].get_text().strip()
