@@ -48,10 +48,8 @@ def GetGoodsId():
         # print(float(com))
     print(com)
 
-s1 = "国药准字H41023800"
-s2 = "国药准字B20020052"
-s3 = "注册证号HC20160011"
-if s1 > s2:
-    print('yes')
-if s3 > s2:
-    print('yes')
+from sys import path
+from pathlib import Path
+from os import makedirs
+if Path(path[0] + "/data").exists() == False:
+    makedirs(path[0] + "/data")

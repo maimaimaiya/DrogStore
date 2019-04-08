@@ -2,10 +2,10 @@
 
 import pandas as pd
 import sys
-#获取在售中价格数据
+import UpdateData as UD
 
 #合并爬取数据，与上传数据
-def MergeData(username,update_path):
+def MergeData(username,cookie,update_path):
     file_path = sys.path[0]+"/data/"+username+".xls"
     df = pd.DataFrame(pd.read_excel(file_path))
     df_update = pd.DataFrame(pd.read_excel(update_path))
@@ -18,18 +18,13 @@ def MergeData(username,update_path):
     #调用接口修改
     cow_num  = df_inner.shape[0]
     # 一行行读数据
-    # for index in range(cow_num):
-    #     #按行取数据
-    #     single_data = df_inner.loc[index]
-    #     # 调用接口post修改数据
-    #     #
-    #     #
-    #     #
-    #     print(single_data["商品url"])
-    #     single_data["库存"]
-    #     single_data["药品编号"]
-    #     single_data["上下架"]
-    #     time.sleep(1000)
+    for index in range(cow_num):
+        #按行取数据
+        single_data = df_inner.loc[index]
+        # 调用接口post修改数据
+        UD.Updata_Drog_Info(cookie,single_data["商品url"],single_data["库存"]
+                            ,single_data["药品编码"],single_data["上下架"])
+        # time.sleep(1000)
 
 #获取在线商品
 #条件 商城价格 < 编号价格*倍数 修改 编号价格*倍数
@@ -46,18 +41,18 @@ def GetOnlineData(username,id_multiple):
     # print(df)
     df.to_excel(sys.path[0]+"/data/" + username + "_price.xls", index=False)
     print("筛选商品")
-    return df
+    # return df
 
 #修改对应价格到网站
-def UpdatePrice(username,multiple):
+def UpdatePrice(username,cookie,multiple,select_list):
     file_path = sys.path[0]+"/data/" + username + "_price.xls"
     df = pd.DataFrame(pd.read_excel(file_path))
     cow_num = df.shape[0]
-    for index in range(cow_num):
+    for index in select_list:
         single_data = df.loc[index]
         single_data["商品url"]
-        single_data["编号价格"] * multiple
         #调用接口修改价格
+        UD.Updata_Drog_Info(cookie, single_data["商品url"],shop_price=single_data["编号价格"] * multiple)
     print("修改价格")
 
 

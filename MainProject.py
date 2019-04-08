@@ -6,7 +6,7 @@ import GetUrl as GU
 import requests
 from threading import Thread
 import pandas as pd
-import os
+import sys
 from wx.lib.pubsub import pub
 
 class GetDataThread(Thread):
@@ -30,7 +30,7 @@ class UpdateThread(Thread):
         self.start()
     def run(self):
         #更新信息- 合并数据、打开对应文件、修改对应数据
-        GU.MergeData(username, open_file_path)
+        GU.MergeData(username,cookie, open_file_path)
         # GetOnlineData("刘茂东3", 1.1)
         wx.CallAfter(pub.sendMessage, "update", msg="update")
 
@@ -41,7 +41,7 @@ class SelectThread(Thread):
         self.start()
     def run(self):
         global df
-        df = GU.GetOnlineData(username, id_multiple)
+        GU.GetOnlineData(username, id_multiple)
         wx.CallAfter(pub.sendMessage, "update", msg="select")
 
 class PriceThread(Thread):
@@ -50,7 +50,8 @@ class PriceThread(Thread):
         self.setDaemon(True)
         self.start()
     def run(self):
-        GU.UpdatePrice(username, multiple)
+        global select_list
+        GU.UpdatePrice(username,cookie, multiple,select_list)
         wx.CallAfter(pub.sendMessage, "update", msg="price")
 
 ###########################################################################
@@ -60,7 +61,7 @@ class PriceThread(Thread):
 class Drog(wx.Frame):
     def __init__(self, parent):
         wx.Frame.__init__(self, parent, id=wx.ID_ANY, title=u"药房网商品修改 V1.0", pos=wx.DefaultPosition,
-                          size=wx.Size(550, 300), style=wx.DEFAULT_FRAME_STYLE | wx.TAB_TRAVERSAL)
+                          size=wx.Size(580, 450), style=wx.DEFAULT_FRAME_STYLE | wx.TAB_TRAVERSAL)
 
         self.SetSizeHints(wx.DefaultSize, wx.DefaultSize)
 
@@ -105,39 +106,44 @@ class Drog(wx.Frame):
         self.m_button5 = wx.Button(self, wx.ID_ANY, u"修改价格", wx.DefaultPosition, wx.DefaultSize, 0)
         bSizer3.Add(self.m_button5, 0, wx.ALL, 5)
 
-        bSizer1.Add(bSizer3, 0, wx.EXPAND, 5)
+        bSizer1.Add(bSizer3, 0, wx.ALIGN_CENTER | wx.ALIGN_CENTER_HORIZONTAL, 1)
 
         self.m_grid1 = wx.grid.Grid(self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, 0)
 
         # Grid
-        self.m_grid1.CreateGrid(1, 5)
+        self.m_grid1.CreateGrid(14, 5)
         self.m_grid1.EnableEditing(True)
         self.m_grid1.EnableGridLines(True)
         self.m_grid1.EnableDragGridSize(False)
         self.m_grid1.SetMargins(0, 0)
 
         # Columns
+        self.m_grid1.SetColSize(0, 110)
+        self.m_grid1.SetColSize(1, 110)
+        self.m_grid1.SetColSize(2, 110)
+        self.m_grid1.SetColSize(3, 110)
+        self.m_grid1.SetColSize(4, 50)
         self.m_grid1.EnableDragColMove(False)
         self.m_grid1.EnableDragColSize(True)
-        self.m_grid1.SetColLabelSize(30)
+        self.m_grid1.SetColLabelSize(25)
         self.m_grid1.SetColLabelAlignment(wx.ALIGN_CENTRE, wx.ALIGN_CENTRE)
 
         # Rows
         self.m_grid1.EnableDragRowSize(True)
-        self.m_grid1.SetRowLabelSize(80)
+        self.m_grid1.SetRowLabelSize(25)
         self.m_grid1.SetRowLabelAlignment(wx.ALIGN_CENTRE, wx.ALIGN_CENTRE)
 
-        self.m_grid1.SetColLabelValue(0, "url")
-        self.m_grid1.SetColLabelValue(1, "国药准字")
-        self.m_grid1.SetColLabelValue(2, "规格")
-        self.m_grid1.SetColLabelValue(3, "商品价格")
-        self.m_grid1.SetColLabelValue(4, "编号价格")
+        self.m_grid1.SetColLabelValue(0, "全选 商品编号")
+        self.m_grid1.SetColLabelValue(1, "名称")
+        self.m_grid1.SetColLabelValue(2, "厂家")
+        self.m_grid1.SetColLabelValue(3, "规格")
+        self.m_grid1.SetColLabelValue(4, "商城价格")
 
         # Label Appearance
 
         # Cell Defaults
         self.m_grid1.SetDefaultCellAlignment(wx.ALIGN_LEFT, wx.ALIGN_TOP)
-        bSizer1.Add(self.m_grid1, 0, wx.ALL, 5)
+        bSizer1.Add(self.m_grid1, 0, wx.ALIGN_CENTER|wx.ALIGN_CENTER_HORIZONTAL|wx.ALL, 5)
 
         self.SetSizer(bSizer1)
         self.Layout()
@@ -176,16 +182,20 @@ class Drog(wx.Frame):
         elif t == "select":
             self.m_button4.Enable()
             #显示数据
+            df = pd.DataFrame(pd.read_excel(sys.path[0] + "/data/" + username + "_price.xls"))
             rows = int(df.shape[0])
             # self.m_grid1.CreateGrid(rows,5)
-            self.m_grid1.Size
+            #删除行
+            self.m_grid1.DeleteRows(numRows=self.m_grid1.GetNumberRows())
+            self.m_grid1.AppendRows(rows)
+            # print(df)
             for i in range(rows):
                 single_data = df.loc[i]
-                self.m_grid1.SetCellValue(i,0,single_data["商品url"])
-                self.m_grid1.SetCellValue(i, 1, single_data["国药准字"])
-                self.m_grid1.SetCellValue(i, 2, single_data["规格"])
-                self.m_grid1.SetCellValue(i, 3, single_data["商城价格"])
-                self.m_grid1.SetCellValue(i, 4, single_data["编号价格"])
+                self.m_grid1.SetCellValue(i,0,single_data["商品编号"])
+                self.m_grid1.SetCellValue(i, 1, single_data["名称1"])
+                self.m_grid1.SetCellValue(i, 2, single_data["厂家1"])
+                self.m_grid1.SetCellValue(i, 3, str(single_data["规格"]))
+                self.m_grid1.SetCellValue(i, 4, str(single_data["商城价格"]))
             wx.MessageBox("已经成功筛选对应数据", "完成消息", wx.OK | wx.YES_DEFAULT)
         elif t == "price":
             self.m_button5.Enable()
@@ -196,16 +206,29 @@ class Drog(wx.Frame):
             wx.MessageBox("请填写商品价格的倍数", "提示消息", wx.OK | wx.YES_DEFAULT)
         elif self.m_textCtrl3.GetValue() == "":
             wx.MessageBox("请填写要修改的倍数", "提示消息", wx.OK | wx.YES_DEFAULT)
+        elif self.m_grid1.GetCellValue(0,0) == "":
+            wx.MessageBox("请先点击筛选商品", "提示消息", wx.OK | wx.YES_DEFAULT)
         else:
             global id_multiple
             global multiple
             id_multiple = float(self.m_textCtrl2.GetValue())
             multiple = float(self.m_textCtrl3.GetValue())
             #修改价格
+            #获取选定的行
+            global select_list
+            select_list = []
+            rows = self.m_grid1.GetNumberRows()
+            for i in range(rows):
+                if self.m_grid1.IsInSelection(i,0):
+                    select_list.append(i)
+            # print(select_list)
             PriceThread()
             event.GetEventObject().Disable()
 
     def SelectDrog(self,event):
+        if self.m_button2.IsEnabled() == False:
+            wx.MessageBox("请先等待数据获取完成，再进行操作", "提示消息", wx.OK | wx.YES_DEFAULT)
+            return
         if self.m_textCtrl2.GetValue() == "":
             wx.MessageBox("请填写商品价格的倍数", "提示消息", wx.OK | wx.YES_DEFAULT)
         elif self.m_textCtrl3.GetValue() == "":
@@ -221,6 +244,9 @@ class Drog(wx.Frame):
             event.GetEventObject().Disable()
 
     def Update(self, event):
+        if self.m_button2.IsEnabled() == False:
+            wx.MessageBox("请先等待数据获取完成，再进行操作", "提示消息", wx.OK | wx.YES_DEFAULT)
+            return
         if open_file_path == "":
             wx.MessageBox("请先选择要更新的文件", "提示消息", wx.OK | wx.YES_DEFAULT)
         else:
@@ -252,7 +278,7 @@ if __name__ == '__main__':
     username = "刘茂东3"
     id_multiple = 1.1
     multiple = 1.5
-    df = ""
+    select_list = []
     URL_MMP = 'http://demo.xx2018.cn/19331%E8%8D%AF%E6%88%BF%E9%80%9A%E5%95%86%E5%93%81%E4%BF%AE%E6%94%B9.txt'
     # GetData(cookie, username)
     app = wx.App(False)

@@ -2,10 +2,11 @@ from urllib import request
 import urllib
 from bs4 import BeautifulSoup as BS
 import re
-import time
+from time import time
 import xlwt
-import sys
-
+from sys import path
+from pathlib import Path
+from os import makedirs
 #得到网页源代码
 #参数：网址
 #返回：网页源代码
@@ -90,14 +91,14 @@ def GetGoodsId(soup):
         goods_id_temp = goods_id[i].find('td', colspan="7").get_text()
         goods_id_temp = goods_id_temp.replace("\n", "")
         # print(i, '：', goods_id_temp)
-        goods_id_arr.append(goods_id_temp)
+        goods_id_arr.append(goods_id_temp.replace("商品编号：",""))
         #正则表达式获取价格
         goods_id_price = GetIdPrice(goods_id_temp)
         goods_id_price_arr.append(goods_id_price)
     return goods_num,goods_id_arr,goods_id_price_arr
 
 #写文件
-def WriteXls(sheet, url,quasi, spec, id, price,state,id_price,row_count):
+def WriteXls(sheet, url,quasi, spec, id, price,state,id_price,name,factory,row_count):
     # write(行，列，值)
     # print(name,total,sales_max)
     # style = xlwt.XFStyle()
@@ -109,6 +110,8 @@ def WriteXls(sheet, url,quasi, spec, id, price,state,id_price,row_count):
     sheet.write(row_count, 4, price)
     sheet.write(row_count, 5, state)
     sheet.write(row_count, 6, id_price)
+    sheet.write(row_count, 7, name)
+    sheet.write(row_count, 8, factory)
 
 
 ###获取商品数据
@@ -126,11 +129,13 @@ def GetData(cookie,username):
     row_count = 0
     save_file = xlwt.Workbook()
     sheet1 = save_file.add_sheet('药房网', cell_overwrite_ok=True)
-    WriteXls(sheet1,"商品url", "国药准字", "规格", "商品编号","商城价格","发布状态","编号价格",row_count)
-    save_file.save(sys.path[0]+'/data/' + username + '.xls')
+    WriteXls(sheet1,"商品url", "国药准字", "规格", "商品编号","商城价格","发布状态","编号价格","名称1","厂家1",row_count)
+    if Path(path[0] + "/data").exists() == False:
+        makedirs(path[0] + "/data")
+    save_file.save(path[0]+'/data/' + username + '.xls')
     #循环每一页得到数据
     for index in range(1, page_num+1):#page_num+1
-        start_time = time.time()
+        start_time = time()
         #获取每一页数据
         if index != 1:
             url = "https://yaodian.yaofangwang.com/product/list/?page=" + str(index)
@@ -146,6 +151,8 @@ def GetData(cookie,username):
         goods_spec_arr = []
         goods_price_arr = []
         goods_state_arr = []
+        goods_name_arr = []
+        goods_factory_arr = []
         #数据存excel表
         for i in range(1,goods_num+1):
             i = i*2
@@ -155,6 +162,10 @@ def GetData(cookie,username):
             #链接
             goods_url = "https://yaodian.yaofangwang.com"+goods_all[6].find('a')['href']
             goods_single = goods_all[1].find_all('div', class_="text-left")
+            goods_name = goods_single[0].get_text()
+            goods_name = goods_name.replace("单轨", "").replace("双轨", "").strip()
+            # print(goods_name)
+            goods_factory = goods_single[4].get_text().strip()
             #准字
             goods_quasi = goods_single[1].get_text().strip()
             #规格
@@ -165,6 +176,8 @@ def GetData(cookie,username):
             goods_url_arr.append(goods_url)
             goods_quasi_arr.append(goods_quasi)
             goods_spec_arr.append(goods_spec)
+            goods_name_arr.append(goods_name)
+            goods_factory_arr.append(goods_factory)
             #商城价格
             goods_price = goods_all[2].find('span').get_text()
             goods_price = float(goods_price.strip('¥'))
@@ -181,13 +194,13 @@ def GetData(cookie,username):
             # excel = copy(rexcel)  # 用xlutils提供的copy方法将xlrd的对象转化为xlwt的对象
             # table = excel.get_sheet(0)  # 用xlwt对象的方法获得要操作的sheet
             WriteXls(sheet1, goods_url_arr[i], goods_quasi_arr[i], goods_spec_arr[i], goods_id_arr[i],
-                     goods_price_arr[i], goods_state_arr[i], goods_id_price_arr[i], row_count)
+                     goods_price_arr[i], goods_state_arr[i], goods_id_price_arr[i], goods_name_arr[i],goods_factory_arr[i],row_count)
             # excel.save('data/' + username + '.xls')  # xlwt对象的保存方法，这时便覆盖掉了原来的excel
         if(index % 50 == 0 or index == page_num + 1):
-            save_file.save('data/' + username + '.xls')
+            save_file.save(path[0] + '/data/' + username + '.xls')
         print("第 ",index, " 页")
         # time.sleep(3)
-        end_time = time.time()
+        end_time = time()
         print("时间：",end_time-start_time)
     # print(soup)
 
