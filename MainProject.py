@@ -1,13 +1,15 @@
 import wx
 import wx.xrc
 import wx.grid
+
+from requests import get
+from threading import Thread
+from pandas import DataFrame
+from pandas import read_excel
+from wx.lib.pubsub import pub
 import GetData as GD
 import GetUrl as GU
-import requests
-from threading import Thread
-import pandas as pd
-import sys
-from wx.lib.pubsub import pub
+import GetCookie as GC
 
 class GetDataThread(Thread):
     def __init__(self):
@@ -54,6 +56,21 @@ class PriceThread(Thread):
         GU.UpdatePrice(username,cookie, multiple,select_list)
         wx.CallAfter(pub.sendMessage, "update", msg="price")
 
+class CookieThread(Thread):
+    def __init__(self):
+        Thread.__init__(self)
+        self.setDaemon(True)
+        self.start()
+    def run(self):
+        global username
+        global cookie
+        if isupdate == 0:
+            username,cookie = GC.GetCookie(username,password)
+            wx.CallAfter(pub.sendMessage, "update", msg="cookie")
+        else:
+            GC.DeleteCookie()
+            wx.CallAfter(pub.sendMessage, "update", msg="updatecookie")
+
 ###########################################################################
 ## Class Drog
 ###########################################################################
@@ -65,7 +82,36 @@ class Drog(wx.Frame):
 
         self.SetSizeHints(wx.DefaultSize, wx.DefaultSize)
 
-        bSizer1 = wx.BoxSizer(wx.VERTICAL)
+        self.bSizer1 = wx.BoxSizer(wx.VERTICAL)
+        ###登录
+        self.bSizer4 = wx.BoxSizer(wx.HORIZONTAL)
+
+        self.m_staticText3 = wx.StaticText(self, wx.ID_ANY, u"用户名:", wx.DefaultPosition, wx.DefaultSize, 0)
+        self.m_staticText3.Wrap(-1)
+        self.bSizer4.Add(self.m_staticText3, 0, wx.ALIGN_CENTER | wx.ALL, 5)
+
+        self.m_textCtrl41 = wx.TextCtrl(self, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0)
+        self.bSizer4.Add(self.m_textCtrl41, 0, wx.ALIGN_CENTER | wx.ALL, 5)
+
+        self.m_button6 = wx.Button(self, wx.ID_ANY, u"立即登录", wx.DefaultPosition, wx.DefaultSize, 0)
+        self.bSizer4.Add(self.m_button6, 0, wx.ALL, 5)
+
+        self.bSizer1.Add(self.bSizer4, 0, wx.ALIGN_CENTER | wx.ALIGN_CENTER_HORIZONTAL, 5)
+
+        self.bSizer5 = wx.BoxSizer(wx.HORIZONTAL)
+
+        self.m_staticText4 = wx.StaticText(self, wx.ID_ANY, u"密   码:", wx.DefaultPosition, wx.DefaultSize, 0)
+        self.m_staticText4.Wrap(-1)
+        self.bSizer5.Add(self.m_staticText4, 0, wx.ALIGN_CENTER | wx.ALL, 5)
+
+        self.m_textCtrl5 = wx.TextCtrl(self, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0)
+        self.bSizer5.Add(self.m_textCtrl5, 0, wx.ALIGN_CENTER | wx.ALL, 5)
+
+        self.m_button7 = wx.Button(self, wx.ID_ANY, u"更新Cookie", wx.DefaultPosition, wx.DefaultSize, 0)
+        self.bSizer5.Add(self.m_button7, 0, wx.ALL, 5)
+
+        self.bSizer1.Add(self.bSizer5, 0, wx.ALIGN_CENTER | wx.ALIGN_CENTER_HORIZONTAL, 5)
+        ###
 
         bSizer2 = wx.BoxSizer(wx.HORIZONTAL)
 
@@ -82,7 +128,7 @@ class Drog(wx.Frame):
         self.m_button3 = wx.Button(self, wx.ID_ANY, u"修改信息", wx.DefaultPosition, wx.DefaultSize, 0)
         bSizer2.Add(self.m_button3, 0, wx.ALL, 5)
 
-        bSizer1.Add(bSizer2, 0, wx.ALIGN_CENTER | wx.ALIGN_CENTER_HORIZONTAL, 1)
+        self.bSizer1.Add(bSizer2, 0, wx.ALIGN_CENTER | wx.ALIGN_CENTER_HORIZONTAL, 1)
 
         bSizer3 = wx.BoxSizer(wx.HORIZONTAL)
 
@@ -106,7 +152,7 @@ class Drog(wx.Frame):
         self.m_button5 = wx.Button(self, wx.ID_ANY, u"修改价格", wx.DefaultPosition, wx.DefaultSize, 0)
         bSizer3.Add(self.m_button5, 0, wx.ALL, 5)
 
-        bSizer1.Add(bSizer3, 0, wx.ALIGN_CENTER | wx.ALIGN_CENTER_HORIZONTAL, 1)
+        self.bSizer1.Add(bSizer3, 0, wx.ALIGN_CENTER | wx.ALIGN_CENTER_HORIZONTAL, 1)
 
         self.m_grid1 = wx.grid.Grid(self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, 0)
 
@@ -143,9 +189,10 @@ class Drog(wx.Frame):
 
         # Cell Defaults
         self.m_grid1.SetDefaultCellAlignment(wx.ALIGN_LEFT, wx.ALIGN_TOP)
-        bSizer1.Add(self.m_grid1, 0, wx.ALIGN_CENTER|wx.ALIGN_CENTER_HORIZONTAL|wx.ALL, 5)
+        self.bSizer1.Add(self.m_grid1, 0, wx.ALIGN_CENTER|wx.ALIGN_CENTER_HORIZONTAL|wx.ALL, 5)
 
-        self.SetSizer(bSizer1)
+
+        self.SetSizer(self.bSizer1)
         self.Layout()
 
         self.Centre(wx.BOTH)
@@ -159,10 +206,11 @@ class Drog(wx.Frame):
         self.m_button3.Bind(wx.EVT_BUTTON, self.Update)
         self.m_button4.Bind(wx.EVT_BUTTON, self.SelectDrog)
         self.m_button5.Bind(wx.EVT_BUTTON, self.UpdatePrice)
-
+        self.m_button6.Bind(wx.EVT_BUTTON, self.Login)
+        self.m_button7.Bind(wx.EVT_BUTTON, self.UpdateCookie)
         pub.subscribe(self.updateDisplay, "update")
 
-        html_info = requests.get(URL_MMP)
+        html_info = get(URL_MMP)
         if html_info.status_code != 200:
             wx.MessageBox("软件出现错误，请检查您的网络 或 联系开发人员！！！", "you are wrong", wx.OK | wx.YES_DEFAULT)
             self.Destroy()
@@ -182,7 +230,7 @@ class Drog(wx.Frame):
         elif t == "select":
             self.m_button4.Enable()
             #显示数据
-            df = pd.DataFrame(pd.read_excel(sys.path[0] + "/data/" + username + "_price.xls"))
+            df = DataFrame(read_excel("./data/" + username + "_price.xls"))
             rows = int(df.shape[0])
             # self.m_grid1.CreateGrid(rows,5)
             #删除行
@@ -200,6 +248,35 @@ class Drog(wx.Frame):
         elif t == "price":
             self.m_button5.Enable()
             wx.MessageBox("已经成功修改价格", "完成消息", wx.OK | wx.YES_DEFAULT)
+        elif t == "cookie":
+            # 隐藏登录按钮
+            self.bSizer1.Hide(self.bSizer5)
+            self.bSizer1.Hide(self.bSizer4)
+            self.SetSizer(self.bSizer1)
+            self.Layout()
+            print("登录完成")
+        elif t == "updatecookie":
+            global isupdate
+            isupdate = 0
+            wx.MessageBox("Cookie更新完成，请重新登录", "完成消息", wx.OK | wx.YES_DEFAULT)
+
+    def UpdateCookie(self,event):
+        global isupdate
+        isupdate = 1
+        CookieThread()
+
+    #立即登录
+    def Login(self,event):
+        #获取用户名和cookie
+        if self.m_textCtrl41.GetValue() == "" or self.m_textCtrl5.GetValue() == "":
+            wx.MessageBox("请填写用户名和密码", "提示消息", wx.OK | wx.YES_DEFAULT)
+            return
+        global username
+        global password
+        username = self.m_textCtrl41.GetValue()
+        password = self.m_textCtrl5.GetValue()
+        #开启线程获取cookie
+        CookieThread()
 
     def UpdatePrice(self,event):
         if self.m_textCtrl2.GetValue() == "":
@@ -271,11 +348,30 @@ class Drog(wx.Frame):
             self.m_textCtrl1.Clear()
             self.m_textCtrl1.write(self.dlg.GetPath())
 
+def Run(username1,cookie1):
+    open_file_path = ""
+    username = username1
+    cookie = cookie1
+    id_multiple = 1.1
+    multiple = 1.5
+    select_list = []
+
+    URL_MMP = 'http://demo.xx2018.cn/19331%E8%8D%AF%E6%88%BF%E9%80%9A%E5%95%86%E5%93%81%E4%BF%AE%E6%94%B9.txt'
+    app = wx.App(False)
+    frame = Drog(None)
+    # 根据自己的类名来生成实例
+    frame.Show(True)
+    # start the applications
+    app.MainLoop()
 
 if __name__ == '__main__':
     open_file_path = ""
-    cookie = "ASP.NET_SessionId=qbg5c1zx4ramqotv505whoqm;"
-    username = "刘茂东3"
+    # cookie = "ASP.NET_SessionId=qbg5c1zx4ramqotv505whoqm;"
+    # username = "刘茂东3"
+    username = ""
+    password = ""
+    cookie = ""
+    isupdate = 0
     id_multiple = 1.1
     multiple = 1.5
     select_list = []

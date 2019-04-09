@@ -1,10 +1,9 @@
 from urllib import request
-import urllib
+from urllib import error
 from bs4 import BeautifulSoup as BS
-import re
+from re import findall
 from time import time
-import xlwt
-from sys import path
+from xlwt import Workbook
 from pathlib import Path
 from os import makedirs
 #得到网页源代码
@@ -19,13 +18,13 @@ def GetHtmlCode(url,cookie):
         #     , "Cookie": cookie}
         headers = [("User-Agent","Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:66.0) Gecko/20100101 Firefox/66.0")
                    ,("Cookie",cookie)]
-        opener = urllib.request.build_opener()
+        opener = request.build_opener()
         opener.addheaders = headers
         file = opener.open(url)
         content_html = file.read()
         # print(content_html)
         # response = urllib.request.urlopen(url)
-    except urllib.error.URLError as e:
+    except error.URLError as e:
         print("error2: 网络连接超时",e)
         return None
     # except Exception as e:
@@ -43,7 +42,7 @@ def GetHtmlCode(url,cookie):
 #返回：页数(int)
 def GetPageNum(soup):
     page_info = soup.find('div', class_="info")
-    num = re.findall(r"条，共 (.+?) 页", str(page_info))
+    num = findall(r"条，共 (.+?) 页", str(page_info))
     return int(num[0])
 
 #得到商品编号价格
@@ -51,18 +50,18 @@ def GetIdPrice(s):
     # s = '商品编号：glbqpshxy4(pal)3条形码：6927128770025'
     com = 0.0
     if s.startswith('商品编号'):
-        integer = re.findall(r"\d+\(", s)
+        integer = findall(r"\d+\(", s)
         if (len(integer) == 0):
-            integer = re.findall(r"\d+�", s)
+            integer = findall(r"\d+�", s)
             if (len(integer) == 0):
                 integer = 0
             else:
                 integer = integer[0].strip('�')
         else:
             integer = integer[0].strip('(')
-        decimal = re.findall(r"\)\d+", s)
+        decimal = findall(r"\)\d+", s)
         if (len(decimal) == 0):
-            decimal = re.findall(r"�\d+", s)
+            decimal = findall(r"�\d+", s)
             if (len(decimal) == 0):
                 decimal = 0
             else:
@@ -127,12 +126,12 @@ def GetData(cookie,username):
     page_num = GetPageNum(soup)
     #存excel数据
     row_count = 0
-    save_file = xlwt.Workbook()
+    save_file = Workbook()
     sheet1 = save_file.add_sheet('药房网', cell_overwrite_ok=True)
     WriteXls(sheet1,"商品url", "国药准字", "规格", "商品编号","商城价格","发布状态","编号价格","名称1","厂家1",row_count)
-    if Path(path[0] + "/data").exists() == False:
-        makedirs(path[0] + "/data")
-    save_file.save(path[0]+'/data/' + username + '.xls')
+    if Path("./data").exists() == False:
+        makedirs("./data")
+    save_file.save('./data/' + username + '.xls')
     #循环每一页得到数据
     for index in range(1, page_num+1):#page_num+1
         start_time = time()
@@ -197,7 +196,7 @@ def GetData(cookie,username):
                      goods_price_arr[i], goods_state_arr[i], goods_id_price_arr[i], goods_name_arr[i],goods_factory_arr[i],row_count)
             # excel.save('data/' + username + '.xls')  # xlwt对象的保存方法，这时便覆盖掉了原来的excel
         if(index % 50 == 0 or index == page_num + 1):
-            save_file.save(path[0] + '/data/' + username + '.xls')
+            save_file.save('./data/' + username + '.xls')
         print("第 ",index, " 页")
         # time.sleep(3)
         end_time = time()

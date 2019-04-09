@@ -49,7 +49,21 @@ def GetGoodsId():
     print(com)
 
 from sys import path
-from pathlib import Path
-from os import makedirs
-if Path(path[0] + "/data").exists() == False:
-    makedirs(path[0] + "/data")
+import os
+print(os.path.dirname(path[0]))
+# from sys import path
+# from pathlib import Path
+# from os import makedirs
+# if Path(path[0] + "/data").exists() == False:
+#     makedirs(path[0] + "/data")
+#
+# import sys
+# from PyQt5 import QtWidgets
+#
+#
+# app = QtWidgets.QApplication(sys.argv)
+# widget = QtWidgets.QWidget()
+# widget.resize(360, 360)
+# widget.setWindowTitle("hello, pyqt5")
+# widget.show()
+# sys.exit(app.exec())

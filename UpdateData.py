@@ -1,9 +1,7 @@
 from bs4 import BeautifulSoup
-import urllib.request
-import time
-import requests
-import json
-import re
+from urllib import error
+from urllib.request import build_opener
+from requests import post
 
 def Updata_Drog_Info(cookies,url,shop_reserve=-10,drog_num=-10,shop_status=-10,shop_price=-10): # 库存，药品编号，上下架,商城价
     # url = 'https://yaodian.yaofangwang.com/product/edit/'
@@ -77,7 +75,7 @@ def Updata_Drog_Info(cookies,url,shop_reserve=-10,drog_num=-10,shop_status=-10,s
     print(drog_commond_name)
     #_data.encode('utf-8'),
     print(url)
-    r = requests.post(url,data=data,headers = headers)
+    r = post(url,data=data,headers = headers)
     print(r.status_code)
     # print(r.text)
 
@@ -86,11 +84,11 @@ def GetHtmlCode(cookies,url):
     try:
         headers = [("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:66.0) Gecko/20100101 Firefox/66.0")
             , ("Cookie", cookies)]
-        opener = urllib.request.build_opener()
+        opener = build_opener()
         opener.addheaders = headers
         response = opener.open(url)
         # response = urllib.request.urlopen(url)
-    except urllib.error.URLError as e:
+    except error.URLError as e:
         print("error2: 网络连接超时", e)
         return None
     if response.getcode() != 200:
@@ -99,8 +97,6 @@ def GetHtmlCode(cookies,url):
     content_html = response.read()
     # print(content_html.decode('utf8'))  # 解码
     return content_html
-
-
 
 if __name__ == '__main__':
     Drog_ID = '18016379'

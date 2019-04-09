@@ -1,19 +1,20 @@
 #file_path
 
-import pandas as pd
-import sys
+from pandas import DataFrame
+from pandas import read_excel
+from pandas import merge
 import UpdateData as UD
 
 #合并爬取数据，与上传数据
 def MergeData(username,cookie,update_path):
-    file_path = sys.path[0]+"/data/"+username+".xls"
-    df = pd.DataFrame(pd.read_excel(file_path))
-    df_update = pd.DataFrame(pd.read_excel(update_path))
+    file_path = "./data/"+username+".xls"
+    df = DataFrame(read_excel(file_path))
+    df_update = DataFrame(read_excel(update_path))
     #合并两个表
-    df_inner = pd.merge(df, df_update, how='inner')
+    df_inner = merge(df, df_update, how='inner')
     # print(df_inner)
     #保存到本地
-    df_inner.to_excel(sys.path[0]+"/data/"+username+"_merge.xls", index=False)
+    df_inner.to_excel("./data/"+username+"_merge.xls", index=False)
 
     #调用接口修改
     cow_num  = df_inner.shape[0]
@@ -31,22 +32,22 @@ def MergeData(username,cookie,update_path):
 #用户名，编号价格倍数，修改后倍数
 def GetOnlineData(username,id_multiple):
     #在线
-    file_path =sys.path[0]+ "/data/" + username + ".xls"
-    df = pd.DataFrame(pd.read_excel(file_path))
+    file_path ="./data/" + username + ".xls"
+    df = DataFrame(read_excel(file_path))
     #url、商城价格、编号价格*倍数、修改后价格
     #查找在线商品
     df = df.loc[df['发布状态'] == '发布']
     df = df.loc[df["商城价格"] < df["编号价格"] * id_multiple]
     #查找 商城价格 < 编号价格*倍数
     # print(df)
-    df.to_excel(sys.path[0]+"/data/" + username + "_price.xls", index=False)
+    df.to_excel("./data/" + username + "_price.xls", index=False)
     print("筛选商品")
     # return df
 
 #修改对应价格到网站
 def UpdatePrice(username,cookie,multiple,select_list):
-    file_path = sys.path[0]+"/data/" + username + "_price.xls"
-    df = pd.DataFrame(pd.read_excel(file_path))
+    file_path = "./data/" + username + "_price.xls"
+    df = DataFrame(read_excel(file_path))
     cow_num = df.shape[0]
     for index in select_list:
         single_data = df.loc[index]
