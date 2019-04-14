@@ -10,7 +10,7 @@ from wx.lib.pubsub import pub
 import GetData as GD
 import GetUrl as GU
 import GetCookie as GC
-
+import os
 class GetDataThread(Thread):
     def __init__(self):
         #线程实例化时立即启动
@@ -337,6 +337,8 @@ class Drog(wx.Frame):
     #打开文件
     def OnOpenFile(self, event):
         # 根据单选的索引执行
+        #设置工作目录
+        wd = os.getcwd()
         filesFilter = "Xls Files (*.xls)|*.xls|" "All files (*.*)|*.*"
         # 选择文件对话框，设置选择的文件必须为xls格式
         self.dlg = wx.FileDialog(self, message=u"选择文件", style=wx.FD_OPEN | wx.FD_CHANGE_DIR,
@@ -347,6 +349,7 @@ class Drog(wx.Frame):
             open_file_path = self.dlg.GetPath()
             self.m_textCtrl1.Clear()
             self.m_textCtrl1.write(self.dlg.GetPath())
+        os.chdir(wd)
 
 def Run(username1,cookie1):
     open_file_path = ""

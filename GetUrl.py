@@ -36,7 +36,7 @@ def MergeData(username,cookie,update_path):
         is_success,tip_info = UD.Updata_Drog_Info(cookie,single_data["商品url"],single_data["库存"]
                             ,single_data["药品编码"],single_data["上下架"])
         if is_success == False:
-            line_arr.append(str(index))
+            line_arr.append(str(index+1))
             url_arr.append(single_data["商品url"])
             quasi_arr.append(single_data["国药准字"])
             spec_arr.append(single_data["规格"])
@@ -55,8 +55,8 @@ def MergeData(username,cookie,update_path):
         data_faied.update({'库存': stock_arr})
         data_faied.update({'上下架': upper_arr})
         data_faied.update({'错误信息': info_arr})
-        df_faied = DataFrame(data_faied, columns=['merge行数', '商品url', '国药准字', '规格', '药品编码', '库存', '上下架','错误信息'], index=None)
-        df_faied.to_excel("./data/"+username+"_failed.xls",index=False)
+    df_faied = DataFrame(data_faied, columns=['merge行数', '商品url', '国药准字', '规格', '药品编码', '库存', '上下架','错误信息'], index=None)
+    df_faied.to_excel("./data/"+username+"_failed.xls",index=False)
 
 #获取在线商品
 #条件 商城价格 < 编号价格*倍数 修改 编号价格*倍数

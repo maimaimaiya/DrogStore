@@ -52,10 +52,12 @@ from pandas import DataFrame
 from pandas import read_excel
 from pandas import merge
 data_faied = {}
-data_faied.update({'商品url':['1','2','3']})
-df_faied = DataFrame(data_faied,columns=['merge行数','商品url', '国药准字', '规格','药品编码','库存','上下架'],index = None)
-
-df_faied.to_excel("./data/刘_failed.xls",index=False)
+df_faied = DataFrame(data_faied, columns=['merge行数', '商品url', '国药准字', '规格', '药品编码', '库存', '上下架','错误信息'], index=None)
+df_faied.to_excel("./data/"+"刘茂东3"+"_failed.xls",index=False)
+# data_faied.update({'商品url':['1','2','3']})
+# df_faied = DataFrame(data_faied,columns=['merge行数','商品url', '国药准字', '规格','药品编码','库存','上下架'],index = None)
+#
+# df_faied.to_excel("./data/刘_failed.xls",index=False)
 # from sys import path
 # from pathlib import Path
 # from os import makedirs
