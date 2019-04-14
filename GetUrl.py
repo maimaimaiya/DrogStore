@@ -17,6 +17,15 @@ def MergeData(username,cookie,update_path):
     #保存到本地
     df_inner.to_excel("./data/"+username+"_merge.xls", index=False)
 
+    data_faied = {}
+    line_arr = []
+    url_arr = []
+    quasi_arr = []
+    spec_arr = []
+    code_arr = []
+    stock_arr = []
+    upper_arr = []
+    info_arr = []
     #调用接口修改
     cow_num  = df_inner.shape[0]
     # 一行行读数据
@@ -24,9 +33,30 @@ def MergeData(username,cookie,update_path):
         #按行取数据
         single_data = df_inner.loc[index]
         # 调用接口post修改数据
-        UD.Updata_Drog_Info(cookie,single_data["商品url"],single_data["库存"]
+        is_success,tip_info = UD.Updata_Drog_Info(cookie,single_data["商品url"],single_data["库存"]
                             ,single_data["药品编码"],single_data["上下架"])
+        if is_success == False:
+            line_arr.append(str(index))
+            url_arr.append(single_data["商品url"])
+            quasi_arr.append(single_data["国药准字"])
+            spec_arr.append(single_data["规格"])
+            code_arr.append(single_data["药品编码"])
+            stock_arr.append(single_data["库存"])
+            upper_arr.append(single_data["上下架"])
+            info_arr.append(tip_info)
+
         # time.sleep(1000)
+    if len(line_arr) != 0:
+        data_faied.update({'merge行数': line_arr})
+        data_faied.update({'商品url': url_arr})
+        data_faied.update({'国药准字': quasi_arr})
+        data_faied.update({'规格': spec_arr})
+        data_faied.update({'药品编码': code_arr})
+        data_faied.update({'库存': stock_arr})
+        data_faied.update({'上下架': upper_arr})
+        data_faied.update({'错误信息': info_arr})
+        df_faied = DataFrame(data_faied, columns=['merge行数', '商品url', '国药准字', '规格', '药品编码', '库存', '上下架','错误信息'], index=None)
+        df_faied.to_excel("./data/"+username+"_failed.xls",index=False)
 
 #获取在线商品
 #条件 商城价格 < 编号价格*倍数 修改 编号价格*倍数
