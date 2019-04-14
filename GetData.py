@@ -195,7 +195,7 @@ def GetData(cookie,username):
             WriteXls(sheet1, goods_url_arr[i], goods_quasi_arr[i], goods_spec_arr[i], goods_id_arr[i],
                      goods_price_arr[i], goods_state_arr[i], goods_id_price_arr[i], goods_name_arr[i],goods_factory_arr[i],row_count)
             # excel.save('data/' + username + '.xls')  # xlwt对象的保存方法，这时便覆盖掉了原来的excel
-        if(index % 50 == 0 or index == page_num + 1):
+        if(index % 50 == 0 or index == page_num):
             save_file.save('./data/' + username + '.xls')
         print("第 ",index, " 页")
         # time.sleep(3)
