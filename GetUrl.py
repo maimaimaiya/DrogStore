@@ -84,7 +84,9 @@ def UpdatePrice(username,cookie,multiple,select_list):
         single_data = df.loc[index]
         single_data["商品url"]
         #调用接口修改价格
-        UD.Updata_Drog_Info(cookie, single_data["商品url"],shop_price=single_data["编号价格"] * multiple)
+        is_success, tip_info = UD.Updata_Drog_Info(cookie, single_data["商品url"],shop_price=single_data["编号价格"] * multiple)
+        if is_success == False:
+            print('修改失败：',tip_info)
     print("修改价格")
 
 
