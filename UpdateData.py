@@ -1,3 +1,5 @@
+# -*- coding:utf-8 -*-
+
 from bs4 import BeautifulSoup
 from urllib import error
 from urllib.request import build_opener
@@ -41,7 +43,8 @@ def Updata_Drog_Info(cookies,url,shop_reserve=-10,drog_num=-10,shop_status=-10,s
                 break
     else:
         status_dict={}
-        status_dict['发布']=1
+        status_dict['上架'] = 1
+        status_dict['发布'] = 1
         status_dict['热销'] = 2
         status_dict['促销'] = 3
         status_dict['新品'] = 4
@@ -72,7 +75,11 @@ def Updata_Drog_Info(cookies,url,shop_reserve=-10,drog_num=-10,shop_status=-10,s
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36"
         , "Cookie": cookies}
-    print(drog_commond_name)
+    try:
+        print(drog_commond_name)
+    except Exception as e:
+        print(e)
+        
     #_data.encode('utf-8'),
     print(url)
     r = post(url,data=data,headers = headers)
@@ -100,5 +107,11 @@ def GetHtmlCode(cookies,url):
 
 if __name__ == '__main__':
     Drog_ID = '18016379'
+    cookie = 'ASP.NET_SessionId=5y243edgijtoprlzhqbmnujp;'
     cookies = 'ASP.NET_SessionId=qbg5c1zx4ramqotv505whoqm;'
+    try:
+        Updata_Drog_Info(cookie,"https://yaodian.yaofangwang.com/product/edit/5698539")
+    except Exception as e:
+        print(e)
+    #time.sleep(1000)
     # u = UpdateData(cookies,Drog_ID)

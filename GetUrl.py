@@ -3,6 +3,7 @@
 from pandas import DataFrame
 from pandas import read_excel
 from pandas import merge
+import xlrd
 import UpdateData as UD
 
 #合并爬取数据，与上传数据
