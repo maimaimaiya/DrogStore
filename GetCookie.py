@@ -4,7 +4,6 @@ from urllib import parse
 from http.cookiejar import CookieJar
 from pathlib import Path
 from os import makedirs
-import os
 #根据用户名和密码
 def GetCookie(username,password):
     cookie = ""

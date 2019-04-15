@@ -9,6 +9,7 @@ def Updata_Drog_Info(cookies,url,shop_reserve=-10,drog_num=-10,shop_status=-10,s
     # url = 'https://yaodian.yaofangwang.com/product/edit/'
     # url += Drog_ID
     try:
+        print(url)
         Drog_ID = url.replace("https://yaodian.yaofangwang.com/product/edit/","")
         # 根据ID获取网页源码
         content_html = GetHtmlCode(cookies,url)
@@ -24,7 +25,7 @@ def Updata_Drog_Info(cookies,url,shop_reserve=-10,drog_num=-10,shop_status=-10,s
         if drog_num==-10:
             drog_num = soup.find('input', id='txt_ProductNumber')['value']  # 商品编号
         drog_standard = soup.find('input', id='txt_Standard')['value']  # 商品标准
-        drog_weight = soup.find('input', id='txt_weight')['value']  # 商品重量
+        #drog_weight = soup.find('p', id='txt_ApplyWeight')['value']  # 商品重量
         drog_code = soup.find('input', id='txt_MedicineBarcode')['value']  # 条形码
         #drog_num = soup.find('input', id='ddl_ShopMedicineType')['value']  # 分类
 
@@ -68,9 +69,9 @@ def Updata_Drog_Info(cookies,url,shop_reserve=-10,drog_num=-10,shop_status=-10,s
         #"store_medicineid":Drog_ID,
         data = {"store_medicineid":Drog_ID,"medicine_barcode":drog_code,"authorized_code":drog_id,"namecn":drog_commond_name,"standard":drog_standard,
                 "troche_type":drog_type,"aliascn":drog_name,"mill_title":drog_group,"product_number":drog_num,
-                "weight":drog_weight,"reserve":shop_reserve,"max_buyqty":shop_maxBuy,"price":shop_price,"period_to":"","store_medicine_typeid":"0",
+                "reserve":shop_reserve,"max_buyqty":shop_maxBuy,"price":shop_price,"period_to":"","store_medicine_typeid":"0",
                 "scheduled_days":"1","store_medicine_status":str(shop_status)}
-
+       # print(data)
        # print(data_json)
 
         headers = {
@@ -83,7 +84,7 @@ def Updata_Drog_Info(cookies,url,shop_reserve=-10,drog_num=-10,shop_status=-10,s
 
 
         #_data.encode('utf-8'),
-        print(url)
+
         r = post(url,data=data,headers = headers)
         print(r.status_code)
         if r.status_code == 200:
@@ -92,6 +93,7 @@ def Updata_Drog_Info(cookies,url,shop_reserve=-10,drog_num=-10,shop_status=-10,s
             return False,'Post修改失败'
         # print(r.text)
     except Exception as e:
+        print('上传失败',e)
         return False,e
 
 def GetHtmlCode(cookies,url):
@@ -117,9 +119,8 @@ if __name__ == '__main__':
     Drog_ID = '18016379'
     cookie = 'ASP.NET_SessionId=5y243edgijtoprlzhqbmnujp;'
     cookies = 'ASP.NET_SessionId=qbg5c1zx4ramqotv505whoqm;'
-    try:
-        Updata_Drog_Info(cookie,"https://yaodian.yaofangwang.com/product/edit/5698539")
-    except Exception as e:
-        print(e)
+    cookie = 'ASP.NET_SessionId=jng0p3z5e1zoa4elnoogaw33;'
+    Updata_Drog_Info(cookie,"https://yaodian.yaofangwang.com/product/edit/5698539")
+
     #time.sleep(1000)
     # u = UpdateData(cookies,Drog_ID)
