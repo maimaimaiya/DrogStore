@@ -6,7 +6,7 @@ from requests import get
 from threading import Thread
 from pandas import DataFrame
 from pandas import read_excel
-from wx.lib.pubsub import pub
+from pubsub import pub
 import GetData as GD
 import GetUrl as GU
 import GetCookie as GC
@@ -77,7 +77,7 @@ class CookieThread(Thread):
 
 class Drog(wx.Frame):
     def __init__(self, parent):
-        wx.Frame.__init__(self, parent, id=wx.ID_ANY, title=u"药房网商品修改 V1.4", pos=wx.DefaultPosition,
+        wx.Frame.__init__(self, parent, id=wx.ID_ANY, title=u"药房网商品修改 V1.5", pos=wx.DefaultPosition,
                           size=wx.Size(580, 450), style=wx.DEFAULT_FRAME_STYLE | wx.TAB_TRAVERSAL)
 
         self.SetSizeHints(wx.DefaultSize, wx.DefaultSize)

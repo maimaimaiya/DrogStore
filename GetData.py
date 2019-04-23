@@ -3,6 +3,7 @@ from urllib import error
 from bs4 import BeautifulSoup as BS
 from re import findall
 from time import time
+from time import sleep
 from xlwt import Workbook
 from pathlib import Path
 from os import makedirs
@@ -134,11 +135,16 @@ def GetData(cookie,username):
     save_file.save('./data/' + username + '.xls')
     #循环每一页得到数据
     for index in range(1, page_num+1):#page_num+1
+        sleep(1)
         start_time = time()
         #获取每一页数据
         if index != 1:
             url = "https://yaodian.yaofangwang.com/product/list/?page=" + str(index)
             html_content = GetHtmlCode(url, cookie)
+            if html_content is None:
+                html_content = GetHtmlCode(url, cookie)
+                if html_content is None:
+                    html_content = GetHtmlCode(url, cookie)
             soup = BS(html_content, 'html.parser', from_encoding='utf-8')
         #商品数，商品编号
         goods_num, goods_id_arr,goods_id_price_arr = GetGoodsId(soup)
