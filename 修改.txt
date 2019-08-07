@@ -1,0 +1,5 @@
+V1.6
+
+GetData.py line 168 goods_url = "https:"+goods_all[0].find('a')['href']  网页中url所在标签位置更改了
+
+UpdateData.py line 8-16 Updata_Drog_Info()函数中传入的url与之前版本不同，从新对其进行了处理
