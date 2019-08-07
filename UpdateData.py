@@ -6,11 +6,15 @@ from urllib.request import build_opener
 from requests import post
 
 def Updata_Drog_Info(cookies,url,shop_reserve=-10,drog_num=-10,shop_status=-10,shop_price=-10): # 库存，药品编号，上下架,商城价
-    # url = 'https://yaodian.yaofangwang.com/product/edit/'
+    front_url = 'https://yaodian.yaofangwang.com/product/edit/'
+    # url = 'https://www.yaofangwang.com/detail-21933953.html'
     # url += Drog_ID
     try:
+   # print(url)
+        # Drog_ID = url.replace("https://yaodian.yaofangwang.com/product/edit/","")
+        Drog_ID = url.split('-')[-1].split('.')[0]
+        url = front_url + Drog_ID
         print(url)
-        Drog_ID = url.replace("https://yaodian.yaofangwang.com/product/edit/","")
         # 根据ID获取网页源码
         content_html = GetHtmlCode(cookies,url)
         #print(content_html)
@@ -91,7 +95,7 @@ def Updata_Drog_Info(cookies,url,shop_reserve=-10,drog_num=-10,shop_status=-10,s
             return True,'修改成功'
         else:
             return False,'Post修改失败'
-        # print(r.text)
+    # print(r.text)
     except Exception as e:
         print('上传失败',e)
         return False,e
@@ -119,7 +123,7 @@ if __name__ == '__main__':
     Drog_ID = '18016379'
     cookie = 'ASP.NET_SessionId=5y243edgijtoprlzhqbmnujp;'
     cookies = 'ASP.NET_SessionId=qbg5c1zx4ramqotv505whoqm;'
-    cookie = 'ASP.NET_SessionId=jng0p3z5e1zoa4elnoogaw33;'
+    cookie = 'ASP.NET_SessionId=2ym5bbz1sro4bu0oe13wn3kn;'
     Updata_Drog_Info(cookie,"https://yaodian.yaofangwang.com/product/edit/5698539")
 
     #time.sleep(1000)

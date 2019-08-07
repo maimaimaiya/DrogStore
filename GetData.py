@@ -165,7 +165,7 @@ def GetData(cookie,username):
             goods_all = soup_all[i].find_all('td')
             # print("goods_all",len(goods_all))
             #链接
-            goods_url = "https://yaodian.yaofangwang.com"+goods_all[6].find('a')['href']
+            goods_url = "https:"+goods_all[0].find('a')['href']
             goods_single = goods_all[1].find_all('div', class_="text-left")
             goods_name = goods_single[0].get_text()
             goods_name = goods_name.replace("单轨", "").replace("双轨", "").strip()
